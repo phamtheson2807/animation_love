@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://use.typekit.net/trt3ngp.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Satisfy&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lobster&family=Pacifico&family=Sacramento&family=Kaushan+Script&family=Alex+Brush&display=swap');
 
     * {
       margin: 0;
@@ -17,7 +17,7 @@
 
     html, body {
       overflow: hidden;
-      background: linear-gradient(180deg, #1a0d1a 0%, #2b0f2b 100%); /* Dreamy gradient */
+      background: linear-gradient(180deg, #1a0d1a 0%, #2b0f2b 100%);
       color: #ffccff;
       -webkit-font-smoothing: antialiased;
     }
@@ -48,52 +48,92 @@
       left: 2rem;
       right: 2rem;
       text-align: center;
-      font-family: 'Dancing Script', 'Great Vibes', 'Satisfy', cursive;
-      font-weight: 600;
-      font-size: max(3.5rem, 3vh);
-      text-shadow: 0 0 15px rgba(255, 153, 204, 0.8), 0 0 30px rgba(255, 102, 204, 0.6);
+      font-family: 'Lobster', 'Pacifico', 'Sacramento', 'Kaushan Script', cursive;
+      font-weight: 400;
+      font-size: max(4rem, 4vh);
+      text-shadow: 
+        0 0 20px rgba(255, 153, 204, 0.9),
+        0 0 40px rgba(255, 102, 204, 0.7),
+        0 0 60px rgba(255, 51, 153, 0.5);
       opacity: 0;
-      animation: fadeIn 3s ease-in forwards 2s;
-      transition: all 1.2s ease-in-out;
-      letter-spacing: 2px;
+      animation: fadeIn 3s ease-in forwards 2s, glowPulse 4s ease-in-out infinite;
+      background: linear-gradient(45deg, #ff66cc, #ffccff, #ff3366);
+      background-size: 200%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: fadeIn 3s ease-in forwards 2s, glowPulse 4s ease-in-out infinite, gradientShift 6s ease-in-out infinite;
+      transition: all 1.5s ease-in-out;
+      letter-spacing: 3px;
+      line-height: 1.2;
+      z-index: 101;
     }
 
     @keyframes fadeIn {
       to { opacity: 1; }
     }
 
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 20px rgba(255, 153, 204, 0.9), 0 0 40px rgba(255, 102, 204, 0.7), 0 0 60px rgba(255, 51, 153, 0.5); }
+      50% { text-shadow: 0 0 30px rgba(255, 153, 204, 1), 0 0 50px rgba(255, 102, 204, 0.9), 0 0 80px rgba(255, 51, 153, 0.7); }
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
     @keyframes textChange {
       0% { 
         opacity: 1; 
-        transform: translateY(0) scale(1); 
+        transform: translateY(0) scale(1) rotateX(0deg); 
       }
-      25% { 
-        opacity: 0; 
-        transform: translateY(-30px) scale(0.95); 
+      20% { 
+        opacity: 0.2; 
+        transform: translateY(-20px) scale(0.95) rotateX(-5deg); 
       }
-      75% { 
+      40% { 
         opacity: 0; 
-        transform: translateY(30px) scale(0.95); 
+        transform: translateY(-30px) scale(0.9) rotateX(-10deg); 
+      }
+      60% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.9) rotateX(10deg); 
+      }
+      80% { 
+        opacity: 0.2; 
+        transform: translateY(20px) scale(0.95) rotateX(5deg); 
       }
       100% { 
         opacity: 1; 
-        transform: translateY(0) scale(1); 
+        transform: translateY(0) scale(1) rotateX(0deg); 
       }
     }
 
     .changing-text {
-      animation: textChange 2.5s ease-in-out;
+      animation: textChange 5s ease-in-out;
+    }
+
+    #sparkleCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
     }
   </style>
 </head>
 
 <body>
   <canvas class="webgl"></canvas>
+  <canvas id="sparkleCanvas"></canvas>
   <h1 class="h1text" id="changingText">Happy Birth Day Thế Sơn</h1>
 
-  <!-- Auto-changing text script -->
+  <!-- Auto-changing text script with sparkle effect -->
   <script>
-    // Array of messages to cycle through
     const messages = [
       "Happy Birthday Thế Sơn! 🎉",
       "Chúc Mừng Sinh Nhật! 🎂",
@@ -109,26 +149,82 @@
 
     let currentIndex = 0;
     const textElement = document.getElementById('changingText');
+    const sparkleCanvas = document.getElementById('sparkleCanvas');
+    const ctx = sparkleCanvas.getContext('2d');
+    let particles = [];
+
+    // Set canvas size
+    function resizeCanvas() {
+      sparkleCanvas.width = window.innerWidth;
+      sparkleCanvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Particle class for sparkle effect
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 5 + 2;
+        this.speedX = Math.random() * 2 - 1;
+        this.speedY = Math.random() * 2 - 1;
+        this.opacity = 1;
+        this.color = `rgba(255, ${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, ${this.opacity})`;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.size *= 0.95;
+        this.opacity -= 0.02;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.opacity;
+        ctx.fill();
+      }
+    }
+
+    function createSparkles() {
+      const rect = textElement.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      for (let i = 0; i < 20; i++) {
+        particles.push(new Particle(centerX + (Math.random() - 0.5) * rect.width, centerY + (Math.random() - 0.5) * rect.height));
+      }
+    }
+
+    function animateSparkles() {
+      ctx.clearRect(0, 0, sparkleCanvas.width, sparkleCanvas.height);
+      particles = particles.filter(p => p.opacity > 0 && p.size > 0.2);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateSparkles);
+    }
+    animateSparkles();
 
     function changeText() {
-      // Add animation class
       textElement.classList.add('changing-text');
+      createSparkles(); // Trigger sparkles on text change
       
-      // Change text after animation starts
       setTimeout(() => {
         currentIndex = (currentIndex + 1) % messages.length;
         textElement.textContent = messages[currentIndex];
-      }, 2250); // Change text in middle of slower animation
+      }, 2500);
       
-      // Remove animation class after animation completes
       setTimeout(() => {
         textElement.classList.remove('changing-text');
-      }, 3500); // Match the longer animation duration
+      }, 5000);
     }
 
-    // Start changing text after initial fade-in (5 seconds)
     setTimeout(() => {
-      setInterval(changeText, 8000); // Change every 8 seconds (slower)
+      setInterval(changeText, 8000);
     }, 5000);
   </script>
 
@@ -290,14 +386,12 @@
         this.listenToResize();
         this.listenToMouseMove();
         
-        // Auto start animation after a short delay
         setTimeout(() => {
           this.startAnimation();
         }, 1000);
       }
 
       startAnimation() {
-        // Start the heart animation loop
         this.loop();
       }
 
@@ -315,7 +409,6 @@
           (this.time.current - this.time.elapsed) * 1000
         );
 
-        // Simple camera movement without audio
         this.angle.x += this.time.delta * 0.001 * 0.63;
         this.angle.z += this.time.delta * 0.001 * 0.39;
         
