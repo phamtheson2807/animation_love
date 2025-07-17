@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Happy Birth Day Thế Sơn</title>
+  <title>heart animation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://use.typekit.net/trt3ngp.css">
   <style>
@@ -56,35 +56,6 @@
       animation: fadeIn 2s ease-in forwards 1s;
     }
 
-    button {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      height: 10vh;
-      width: 10vh;
-      transform: translateY(2vh);
-      right: 0;
-      margin: auto;
-      background: transparent;
-      border: 2px solid #ff99cc;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 15px rgba(255, 153, 204, 0.4);
-    }
-
-    button:hover {
-      background: rgba(255, 153, 204, 0.2);
-      box-shadow: 0 0 20px rgba(255, 153, 204, 0.6);
-      transform: translateY(2vh) scale(1.1);
-    }
-
-    svg {
-      width: 4vh;
-      fill: #ffccff;
-    }
-
     @keyframes fadeIn {
       to { opacity: 1; }
     }
@@ -94,7 +65,6 @@
 <body>
   <canvas class="webgl"></canvas>
   <h1 class="h1text">Happy Birth Day Thế Sơn</h1>
-
 
   <script type="x-shader/x-vertex" id="vertexShader">
     #define M_PI 3.1415926535897932384626433832795
@@ -249,11 +219,20 @@
         this.renderer.setSize(this.width, this.height);
         this.timer = 0;
         this.addToScene();
-        this.addButton();
 
         this.render();
         this.listenToResize();
         this.listenToMouseMove();
+        
+        // Auto start animation after a short delay
+        setTimeout(() => {
+          this.startAnimation();
+        }, 1000);
+      }
+
+      startAnimation() {
+        // Start the heart animation loop
+        this.loop();
       }
 
       start() {}
@@ -270,52 +249,27 @@
           (this.time.current - this.time.elapsed) * 1000
         );
 
-        if (this.analyser && this.isRunning) {
-          this.time.t = this.time.elapsed - this.time.t0 + this.time.t1;
-          this.data = this.analyser.getAverageFrequency();
-          this.data *= this.data / 2000;
-          this.angle.x += this.time.delta * 0.001 * 0.63;
-          this.angle.z += this.time.delta * 0.001 * 0.39;
-          const justFinished = this.isRunning && !this.sound.isPlaying;
-          if (justFinished) {
-            this.time.t1 = this.time.t;
-            this.audioBtn.disabled = false;
-            this.isRunning = false;
-            const tl = gsap.timeline();
-            this.angle.x = 0;
-            this.angle.z = 0;
-            tl.to(this.camera.position, {
-              x: 0,
-              z: 4.5,
-              duration: 4,
-              ease: "expo.in"
-            });
+        // Simple camera movement without audio
+        this.angle.x += this.time.delta * 0.001 * 0.63;
+        this.angle.z += this.time.delta * 0.001 * 0.39;
+        
+        this.camera.position.x = Math.sin(this.angle.x) * this.parameters.a;
+        this.camera.position.z = Math.min(
+          Math.max(Math.cos(this.angle.z) * this.parameters.c, 1.75),
+          6.5
+        );
 
-            tl.to(this.audioBtn, {
-              opacity: () => 1,
-              duration: 1,
-              ease: "power1.out",
-              
-            });
-          } else {
-            this.camera.position.x = Math.sin(this.angle.x) * this.parameters.a;
-            this.camera.position.z = Math.min(
-              Math.max(Math.cos(this.angle.z) * this.parameters.c, 1.75),
-              6.5
-            );
-          }
-        }
         this.camera.lookAt(this.scene.position);
         if (this.heartMaterial) {
           this.heartMaterial.uniforms.uTime.value +=
-            this.time.delta * this.time.frequency * (1 + this.data * 0.2);
+            this.time.delta * this.time.frequency * 1.5;
         }
         if (this.model) {
-          this.model.rotation.y -= 0.0005 * this.time.delta * (1 + this.data);
+          this.model.rotation.y += 0.001 * this.time.delta;
         }
         if (this.snowMaterial) {
           this.snowMaterial.uniforms.uTime.value +=
-            this.time.delta * 0.0004 * (1 + this.data);
+            this.time.delta * 0.0004;
         }
         this.render();
 
@@ -429,53 +383,35 @@
       }
 
       async addModel() {
-        this.model = await this.loadObj(
-          "https://assets.codepen.io/74321/heart.glb"
-        );
-        this.model.scale.set(0.001, 0.001, 0.001);
-        this.model.material = new THREE.MeshMatcapMaterial({
-          matcap: this.textureLoader.load(
-            "https://assets.codepen.io/74321/3.png",
-            () => {
-              gsap.to(this.model.scale, {
-                x: 0.25,
-                y: 0.25,
-                z: 0.25,
-                duration: 1.5,
-                ease: "Elastic.easeOut"
-              });
-            }
-          ),
-          color: "#ff3366"
-        });
-        this.scene.add(this.model);
-      }
-
-      addButton() {
-        this.audioBtn = document.querySelector("button");
-        this.audioBtn.addEventListener("click", () => {
-          this.audioBtn.disabled = true;
-          if (this.analyser) {
-            this.sound.play();
-            this.time.t0 = this.time.elapsed;
-            this.data = 0;
-            this.isRunning = true;
-            gsap.to(this.audioBtn, {
-              opacity: 0,
-              duration: 1,
-              ease: "power1.out"
-            });
-          } else {
-            this.loadMusic().then(() => {
-              console.log("music loaded");
-            });
-          }
-        });
+        try {
+          this.model = await this.loadObj(
+            "https://assets.codepen.io/74321/heart.glb"
+          );
+          this.model.scale.set(0.001, 0.001, 0.001);
+          this.model.material = new THREE.MeshMatcapMaterial({
+            matcap: this.textureLoader.load(
+              "https://assets.codepen.io/74321/3.png",
+              () => {
+                gsap.to(this.model.scale, {
+                  x: 0.25,
+                  y: 0.25,
+                  z: 0.25,
+                  duration: 1.5,
+                  ease: "Elastic.easeOut"
+                });
+              }
+            ),
+            color: "#ff3366"
+          });
+          this.scene.add(this.model);
+        } catch (error) {
+          console.log("Model loading failed:", error);
+        }
       }
 
       loadObj(path) {
         const loader = new GLTFLoader();
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
           loader.load(
             path,
             response => {
@@ -484,39 +420,7 @@
             xhr => {},
             err => {
               console.log(err);
-            }
-          );
-        });
-      }
-
-      loadMusic() {
-        return new Promise(resolve => {
-          const listener = new THREE.AudioListener();
-          this.camera.add(listener);
-          this.sound = new THREE.Audio(listener);
-          const audioLoader = new THREE.AudioLoader();
-          audioLoader.load(
-            "https://assets.codepen.io/74321/ukulele.mp3",
-            buffer => {
-              this.sound.setBuffer(buffer);
-              this.sound.setLoop(false);
-              this.sound.setVolume(0.5);
-              this.sound.play();
-              this.analyser = new THREE.AudioAnalyser(this.sound, 32);
-              const data = this.analyser.getAverageFrequency();
-              this.isRunning = true;
-              this.t0 = this.time.elapsed;
-              resolve(data);
-            },
-            progress => {
-              gsap.to(this.audioBtn, {
-                opacity: () => 1 - progress.loaded / progress.total,
-                duration: 1,
-                ease: "power1.out"
-              });
-            },
-            error => {
-              console.log(error);
+              reject(err);
             }
           );
         });
