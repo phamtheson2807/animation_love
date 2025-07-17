@@ -54,17 +54,70 @@
       text-shadow: 0 0 10px rgba(255, 153, 204, 0.7);
       opacity: 0;
       animation: fadeIn 2s ease-in forwards 1s;
+      transition: all 0.8s ease-in-out;
     }
 
     @keyframes fadeIn {
       to { opacity: 1; }
+    }
+
+    @keyframes textChange {
+      0% { opacity: 1; transform: translateY(0); }
+      25% { opacity: 0; transform: translateY(-20px); }
+      75% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .changing-text {
+      animation: textChange 1.5s ease-in-out;
     }
   </style>
 </head>
 
 <body>
   <canvas class="webgl"></canvas>
-  <h1 class="h1text">Happy Birth Day Thế Sơn</h1>
+  <h1 class="h1text" id="changingText">Happy Birth Day Thế Sơn</h1>
+
+  <!-- Auto-changing text script -->
+  <script>
+    // Array of messages to cycle through
+    const messages = [
+      "Happy Birthday Thế Sơn! 🎉",
+      "Chúc Mừng Sinh Nhật! 🎂",
+      "May All Your Dreams Come True ✨",
+      "Wishing You Joy & Happiness 💖",
+      "Another Year of Wonderful You! 🌟",
+      "Celebrate Your Special Day! 🎈",
+      "28.07 - Your Amazing Day! 🎊",
+      "22+ Years of Awesomeness! 🚀",
+      "Love & Best Wishes! 💝",
+      "Happy Birthday Thế Sơn! 🎉"
+    ];
+
+    let currentIndex = 0;
+    const textElement = document.getElementById('changingText');
+
+    function changeText() {
+      // Add animation class
+      textElement.classList.add('changing-text');
+      
+      // Change text after animation starts
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % messages.length;
+        textElement.textContent = messages[currentIndex];
+      }, 750); // Change text in middle of animation
+      
+      // Remove animation class after animation completes
+      setTimeout(() => {
+        textElement.classList.remove('changing-text');
+      }, 1500);
+    }
+
+    // Start changing text after initial fade-in (3 seconds)
+    setTimeout(() => {
+      setInterval(changeText, 4000); // Change every 4 seconds
+    }, 3000);
+  </script>
 
   <script type="x-shader/x-vertex" id="vertexShader">
     #define M_PI 3.1415926535897932384626433832795
