@@ -118,12 +118,12 @@
       setTimeout(() => {
         currentIndex = (currentIndex + 1) % messages.length;
         textElement.textContent = messages[currentIndex];
-      }, 1250); // Change text in middle of slower animation
+      }, 2250); // Change text in middle of slower animation
       
       // Remove animation class after animation completes
       setTimeout(() => {
         textElement.classList.remove('changing-text');
-      }, 2500); // Match the longer animation duration
+      }, 3500); // Match the longer animation duration
     }
 
     // Start changing text after initial fade-in (5 seconds)
