@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://use.typekit.net/trt3ngp.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Parisienne&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Satisfy&display=swap');
 
     * {
       margin: 0;
@@ -48,13 +48,14 @@
       left: 2rem;
       right: 2rem;
       text-align: center;
-      font-family: 'Parisienne', cursive;
-      font-weight: 400;
-      font-size: max(3rem, 2vh);
-      text-shadow: 0 0 10px rgba(255, 153, 204, 0.7);
+      font-family: 'Dancing Script', 'Great Vibes', 'Satisfy', cursive;
+      font-weight: 600;
+      font-size: max(3.5rem, 3vh);
+      text-shadow: 0 0 15px rgba(255, 153, 204, 0.8), 0 0 30px rgba(255, 102, 204, 0.6);
       opacity: 0;
-      animation: fadeIn 2s ease-in forwards 1s;
-      transition: all 0.8s ease-in-out;
+      animation: fadeIn 3s ease-in forwards 2s;
+      transition: all 1.2s ease-in-out;
+      letter-spacing: 2px;
     }
 
     @keyframes fadeIn {
@@ -62,14 +63,26 @@
     }
 
     @keyframes textChange {
-      0% { opacity: 1; transform: translateY(0); }
-      25% { opacity: 0; transform: translateY(-20px); }
-      75% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
+      0% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+      25% { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.95); 
+      }
+      75% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+      }
+      100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
     }
 
     .changing-text {
-      animation: textChange 1.5s ease-in-out;
+      animation: textChange 2.5s ease-in-out;
     }
   </style>
 </head>
@@ -105,18 +118,18 @@
       setTimeout(() => {
         currentIndex = (currentIndex + 1) % messages.length;
         textElement.textContent = messages[currentIndex];
-      }, 750); // Change text in middle of animation
+      }, 1250); // Change text in middle of slower animation
       
       // Remove animation class after animation completes
       setTimeout(() => {
         textElement.classList.remove('changing-text');
-      }, 1500);
+      }, 2500); // Match the longer animation duration
     }
 
-    // Start changing text after initial fade-in (3 seconds)
+    // Start changing text after initial fade-in (5 seconds)
     setTimeout(() => {
-      setInterval(changeText, 4000); // Change every 4 seconds
-    }, 3000);
+      setInterval(changeText, 8000); // Change every 8 seconds (slower)
+    }, 5000);
   </script>
 
   <script type="x-shader/x-vertex" id="vertexShader">
